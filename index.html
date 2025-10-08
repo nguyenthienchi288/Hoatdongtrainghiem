@@ -10,10 +10,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
-  -webkit-touch-callout: none; /* Chặn menu copy/paste trên iOS */
--webkit-user-select: none;   /* Chặn chọn văn bản trên Chrome, Safari, Opera */
--ms-user-select: none;       /* Chặn chọn văn bản trên IE/Edge */
-user-select: none;           /* Thuộc tính tiêu chuẩn */
   :root{
     --bg:#e9f5ff;
     --ink:#0b2545;
@@ -31,6 +27,12 @@ user-select: none;           /* Thuộc tính tiêu chuẩn */
     background: linear-gradient(180deg,#eaf6ff 0%,#f7fbff 55%,#ffffff 100%);
     color:var(--ink);
     overflow-x:hidden;
+    
+    /* FIX: Disable text selection on the entire page */
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Safari */
+    -ms-user-select: none;       /* Internet Explorer/Edge */
+    user-select: none;           /* Standard */
   }
   .page{
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:12px; min-height:100vh;
@@ -111,7 +113,6 @@ user-select: none;           /* Thuộc tính tiêu chuẩn */
     width:56px; height:56px; border-radius:14px; display:flex; align-items:center; justify-content:center;
     color:#fff; font-size:26px; font-weight:800;
     box-shadow: 0 10px 22px rgba(0,0,0,.15), inset 0 0 0 2px #ffffff22;
-    user-select:none;
   }
   .p-blue{ background: linear-gradient(145deg,#3b82f6,#1d4ed8)}
   .p-pink{ background: linear-gradient(145deg,#ec4899,#be185d)}
