@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-<title>Chạy Vô Tận: Tình Bạn</title>
+<title>Chạy Vô Tận: Tình Bạn+ (9:16)</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
@@ -26,35 +26,25 @@
     font-family:'Be Vietnam Pro',system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,'Noto Sans',sans-serif;
     background: linear-gradient(180deg,#eaf6ff 0%,#f7fbff 55%,#ffffff 100%);
     color:var(--ink);
-    overflow-x:hidden; /* FIX: Allow vertical scroll on mobile */
+    overflow-x:hidden;
   }
   .page{
-    display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px; min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:12px; min-height:100vh;
   }
 
-  /* GAME AREA */
+  /* GAME AREA - UPDATED FOR 9:16 */
   .game-shell{
     position:relative;
-    /* Fit within viewport width and height while keeping 16:9 */
-    width: min(900px, 96vw, 177.78vh); /* 177.78vh ~= 100vh * 16 / 9 */
-    max-height: 92vh; /* avoid vertical overflow on small screens */
-    aspect-ratio: 16 / 9;
-    height: auto;
+    /* Switched from width-based to height-based constraint */
+    height: 90vh;
+    max-height: 800px; /* Max size for large screens */
+    aspect-ratio: 9/16; /* Portrait aspect ratio */
     border-radius: 18px;
     overflow:hidden;
     box-shadow: 0 20px 50px rgba(13,37,69,.15);
     background: #cfe9ff;
     border:2px solid #b5d9ff;
-    flex-shrink: 0; /* Prevent game shell from shrinking */
-  }
-  /* Fallback for browsers without aspect-ratio support */
-  @supports not (aspect-ratio: 1 / 1){
-    .game-shell{
-      height: 0;
-      padding-top: 56.25%; /* 9/16 */
-      width: min(900px, 96vw, 177.78vh);
-      max-height: none;
-    }
+    flex-shrink: 0;
   }
   .layer{
     position:absolute; inset:0;
@@ -85,7 +75,7 @@
 
   /* HUD */
   .hud{
-    position:absolute; top:10px; left:10px; right:10px; display:flex; flex-wrap: wrap; align-items:center; justify-content:space-between; gap:8px; z-index:10;
+    position:absolute; top:10px; left:10px; right:10px; display:flex; flex-wrap: wrap; align-items:center; justify-content:center; gap:8px; z-index:10;
   }
   .pill{
     background:var(--card); backdrop-filter: blur(8px);
@@ -101,16 +91,15 @@
   .badge-diff{
     font-size:.8rem; padding:.2rem .5rem; border-radius:999px; border:1px solid #e6f2ff; background:#fff;
   }
-  .hud > .d-flex {
-    flex-basis: 100%;
-    justify-content: flex-end;
+   .hud-bottom-controls {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
   }
-  @media (min-width: 768px) {
-    .hud > .d-flex {
-        flex-basis: auto;
-    }
-  }
-
 
   /* ENTITIES */
   .entity{ position:absolute; will-change: transform; }
@@ -149,7 +138,7 @@
     box-shadow: 0 25px 60px rgba(13,37,69,.18);
   }
 
-  .choice{ display:flex; gap:12px; flex-wrap:wrap; }
+  .choice{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
   .chip{
     border:1px solid #e7efff; border-radius:12px; padding:10px 12px; cursor:pointer; display:flex; align-items:center; gap:8px;
     background:#f9fbff;
@@ -158,18 +147,18 @@
 
   /* MOBILE CONTROLS */
   .mobile-ctrl{
-    position:absolute; inset:0; display:flex; align-items:flex-end; justify-content:center; padding:12px; z-index:9; pointer-events:none;
+    position:absolute; inset:0; display:flex; align-items:flex-end; justify-content:center; padding:20px; z-index:9; pointer-events:none;
     touch-action: none;
   }
   .jump-btn{
-    pointer-events:auto; border:none; border-radius:999px; padding:14px 24px; font-weight:800; font-size:1.1rem; color:#fff;
+    pointer-events:auto; border:none; border-radius:999px; padding:18px 28px; font-weight:800; font-size:1.2rem; color:#fff;
     background: linear-gradient(145deg,#2563eb,#1e3a8a); box-shadow: 0 12px 26px rgba(37,99,235,.35);
     touch-action: none;
   }
 
   /* TOAST */
   .toastx{
-    position:absolute; left:50%; top:16%; transform: translateX(-50%) translateY(-20px);
+    position:absolute; left:50%; top:10%; transform: translateX(-50%) translateY(-20px);
     background:#111827; color:#fff; padding:8px 12px; border-radius:10px; font-weight:600; opacity:0; transition: .25s;
     z-index:25;
   }
@@ -177,7 +166,6 @@
 
   @media (max-width:576px){
     .player{ width:50px; height:50px; font-size:22px }
-    .hud { justify-content: center; }
   }
 </style>
 </head>
@@ -194,16 +182,16 @@
     <div class="layer ground"></div>
 
     <div class="layer hud">
-      <div class="pill" id="scorePill"><i class="bi bi-trophy-fill text-warning"></i> <span>Điểm:</span> <span id="score">0</span></div>
-      <div class="pill"><i class="bi bi-star-fill text-warning"></i> Kỷ lục: <span id="best">0</span></div>
-      <div class="pill"><i class="bi bi-heart-fill text-danger"></i> Mạng: <span id="lives">3</span></div>
-      <div class="pill"><i class="bi bi-lightning-charge-fill text-warning"></i> Cấp: <span id="level">1</span> <span class="badge-diff ms-2" id="diffBadge">Dễ</span></div>
-      <div class="d-flex gap-2">
-        <button class="btn-icon" id="btnPause"><i class="bi bi-pause-fill"></i><span class="d-none d-sm-inline">Tạm dừng</span></button>
+      <div class="pill" id="scorePill"><i class="bi bi-trophy-fill text-warning"></i> <span id="score">0</span></div>
+      <div class="pill"><i class="bi bi-star-fill text-warning"></i> <span id="best">0</span></div>
+      <div class="pill"><i class="bi bi-heart-fill text-danger"></i> <span id="lives">3</span></div>
+      <div class="pill"><i class="bi bi-lightning-charge-fill text-warning"></i> <span id="level">1</span></div>
+    </div>
+     <div class="hud-bottom-controls">
+        <button class="btn-icon" id="btnPause"><i class="bi bi-pause-fill"></i></button>
         <button class="btn-icon" id="btnMute"><i class="bi bi-volume-up-fill"></i></button>
         <button class="btn-icon" id="btnRestart"><i class="bi bi-arrow-repeat"></i></button>
       </div>
-    </div>
 
     <div class="layer">
       <div class="entity player p-blue" id="player" aria-label="Nhân vật" role="img">🙂</div>
@@ -213,42 +201,34 @@
     <div class="layer" id="entities"></div>
 
     <div class="overlay" id="startOverlay" aria-modal="true" role="dialog">
-      <div class="cardx">
-        <h2 class="fw-bold mb-2"><i class="bi bi-controller"></i> Chạy Vô Tận: Xây Dựng Tình Bạn+</h2>
-        <p class="text-secondary mb-3">Ăn <span class="text-success fw-bold">Hành vi Tốt</span> để cộng điểm, tránh <span class="text-danger fw-bold">Hành vi Xấu</span>. Nhặt <span class="text-warning fw-bold">Khiên</span> để chặn 1 lần va chạm.</p>
+      <div class="cardx text-center">
+        <h2 class="fw-bold mb-2"><i class="bi bi-controller"></i> Chạy Vô Tận</h2>
+        <p class="text-secondary mb-3">Giữ để bay lên, nhả để rơi xuống.</p>
 
         <div class="mb-3">
-            <div class="fw-bold mb-1">Điều khiển</div>
-            <div>- Máy tính: giữ phím <kbd>Space</kbd> để <strong>nhảy/giữ bay</strong>, nhả để rơi. <kbd>P</kbd> tạm dừng.</div>
-            <div>- Điện thoại: <strong>nhấn & giữ</strong> nút <b>NHẢY/BAY</b> hoặc <strong>chạm & giữ</strong> màn hình để bay, nhả để rơi.</div>
+            <label class="fw-bold mb-2">Chọn nhân vật</label>
+            <div class="choice" id="charChoice">
+              <div class="chip active" data-char="blue"><div class="player p-blue" style="width:36px;height:36px;font-size:18px;">🙂</div></div>
+              <div class="chip" data-char="pink"><div class="player p-pink" style="width:36px;height:36px;font-size:18px;">😺</div></div>
+              <div class="chip" data-char="green"><div class="player p-green" style="width:36px;height:36px;font-size:18px;">🦊</div></div>
+              <div class="chip" data-char="gold"><div class="player p-gold" style="width:36px;height:36px;font-size:18px;">🐻</div></div>
+            </div>
         </div>
 
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="fw-bold mb-1">Chọn nhân vật</label>
-            <div class="choice" id="charChoice">
-              <div class="chip active" data-char="blue"><div class="player p-blue" style="width:36px;height:36px;font-size:18px;">🙂</div> Xanh</div>
-              <div class="chip" data-char="pink"><div class="player p-pink" style="width:36px;height:36px;font-size:18px;">😺</div> Hồng</div>
-              <div class="chip" data-char="green"><div class="player p-green" style="width:36px;height:36px;font-size:18px;">🦊</div> Lục</div>
-              <div class="chip" data-char="gold"><div class="player p-gold" style="width:36px;height:36px;font-size:18px;">🐻</div> Vàng</div>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <label class="fw-bold mb-1">Độ khó</label>
+        <div class="mb-3">
+            <label class="fw-bold mb-2">Độ khó</label>
             <div class="choice" id="diffChoice">
               <div class="chip active" data-diff="easy"><i class="bi bi-emoji-smile"></i> Dễ</div>
               <div class="chip" data-diff="normal"><i class="bi bi-emoji-neutral"></i> Vừa</div>
               <div class="chip" data-diff="hard"><i class="bi bi-emoji-dizzy"></i> Khó</div>
             </div>
-          </div>
         </div>
 
         <hr class="my-3">
-        <div class="d-flex gap-2">
+        <div class="d-grid gap-2">
           <button class="btn btn-primary btn-lg" id="btnStart"><i class="bi bi-play-fill"></i> Bắt đầu</button>
-          <button class="btn btn-outline-secondary" id="btnHow">Luật & Gợi ý</button>
+          <button class="btn btn-outline-secondary" id="btnHow">Luật chơi</button>
         </div>
-        <div class="small text-secondary mt-2">Tip: Nhảy sớm 1 chút để vượt chướng ngại tốc độ cao. Khiên tồn tại 8 giây.</div>
       </div>
     </div>
 
@@ -257,15 +237,15 @@
         <h3 class="fw-bold">Kết thúc!</h3>
         <div class="display-6 text-primary">Điểm: <span id="finalScore">0</span></div>
         <div class="mt-1">Kỷ lục: <span class="fw-bold" id="finalBest">0</span></div>
-        <div class="mt-3 d-flex justify-content-center gap-2">
+        <div class="mt-3 d-grid gap-2">
           <button class="btn btn-primary" id="btnPlayAgain"><i class="bi bi-arrow-repeat"></i> Chơi lại</button>
-          <button class="btn btn-outline-secondary" id="btnChange"><i class="bi bi-sliders"></i> Đổi nhân vật/độ khó</button>
+          <button class="btn btn-outline-secondary" id="btnChange"><i class="bi bi-sliders"></i> Cài đặt</button>
         </div>
       </div>
     </div>
 
     <div class="mobile-ctrl">
-      <button class="jump-btn" id="btnJump"><i class="bi bi-chevron-up"></i> NHẢY / BAY (GIỮ)</button>
+      <button class="jump-btn" id="btnJump"><i class="bi bi-chevron-up"></i> BAY</button>
     </div>
 
     <div class="toastx" id="toast">+10 điểm</div>
@@ -312,7 +292,6 @@ const scoreEl = document.getElementById('score');
 const bestEl = document.getElementById('best');
 const livesEl = document.getElementById('lives');
 const levelEl = document.getElementById('level');
-const diffBadge = document.getElementById('diffBadge');
 const startOverlay = document.getElementById('startOverlay');
 const gameOver = document.getElementById('gameOver');
 const btnStart = document.getElementById('btnStart');
@@ -395,7 +374,7 @@ function applySettings(){
   
   state.level = 1; state.levelTimer = 0; state.score = 0; state.ents.length = 0;
   state.shield = false; state.shieldTimer = 0;
-  livesEl.textContent = state.lives; levelEl.textContent = state.level; diffBadge.textContent = d.label;
+  livesEl.textContent = state.lives; levelEl.textContent = state.level;
   scoreEl.textContent = 0;
   entitiesLayer.innerHTML='';
   const skins = {blue:['p-blue','🙂'], pink:['p-pink','😺'], green:['p-green','🦊'], gold:['p-gold','🐻']};
@@ -629,7 +608,8 @@ function startGame(){
   measure();
   
   const p = state.player;
-  p.x = 120; p.y = state.groundY - p.h; p.vy=0;
+  p.x = state.w * 0.2; // UPDATED: Relative starting position
+  p.y = state.groundY - p.h; p.vy=0;
   placePlayer();
   requestAnimationFrame(step);
 }
@@ -644,7 +624,7 @@ function gameOverNow(){
 function pauseToggle(){
   if(!state.running || state.over) return;
   state.paused = !state.paused;
-  btnPause.innerHTML = state.paused ? `<i class="bi bi-play-fill"></i><span class="d-none d-sm-inline">Tiếp tục</span>` : `<i class="bi bi-pause-fill"></i><span class="d-none d-sm-inline">Tạm dừng</span>`;
+  btnPause.innerHTML = state.paused ? `<i class="bi bi-play-fill"></i>` : `<i class="bi bi-pause-fill"></i>`;
   if(!state.paused){ state.lastT = performance.now(); }
 }
 
@@ -677,7 +657,7 @@ const endHold   = (e)=>{ e.preventDefault(); holdUp = false; };
 
 game.addEventListener('pointerdown', startHold, {passive:false});
 game.addEventListener('pointerup',   endHold,   {passive:false});
-game.addEventListener('pointerleave', endHold, {passive:false}); // Added to handle pointer leaving game area
+game.addEventListener('pointerleave', endHold, {passive:false});
 game.addEventListener('pointercancel',endHold,   {passive:false});
 btnJump.addEventListener('pointerdown', startHold, {passive:false});
 btnJump.addEventListener('pointerup',   endHold,   {passive:false});
