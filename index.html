@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<title>Chạy Vô Tận: Tình Bạn+ (Bản Sửa Lỗi)</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#e9f5ff;
+    --ink:#0b2545;
+    --good:#16a34a;
+    --bad:#dc2626;
+    --accent:#2563eb;
+    --gold:#f59e0b;
+    --card:#ffffffcc;
+  }
+  *{box-sizing:border-box}
+  html,body{
+    height:100%;
+    margin:0;
+    font-family:'Be Vietnam Pro',system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,'Noto Sans',sans-serif;
+    background: linear-gradient(180deg,#eaf6ff 0%,#f7fbff 55%,#ffffff 100%);
+    color:var(--ink);
+    overflow:hidden;
+  }
+  .page{
+    display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px;height:100%;
+  }
+
+  /* GAME AREA */
+  .game-shell{
+    position:relative;
+    width: min(900px, 96vw);
+    aspect-ratio: 16/9;
+    border-radius: 18px;
+    overflow:hidden;
+    box-shadow: 0 20px 50px rgba(13,37,69,.15);
+    background: #cfe9ff;
+    border:2px solid #b5d9ff;
+  }
+  .layer{
+    position:absolute; inset:0;
+  }
+  .sky{
+    background: linear-gradient(180deg,#cfe9ff 0%,#e9f5ff 65%,#fff 100%);
+  }
+  .cloud{
+    position:absolute; top:10%; width:140px; height:50px; background:#fff; opacity:.85; border-radius:40px;
+    box-shadow: 60px 10px 0 10px #fff, 20px -10px 0 8px #fff, 90px -5px 0 6px #fff;
+    animation: cloudMove linear infinite;
+  }
+  .cloud.c1{ top:12%; left:-180px; animation-duration: 28s;}
+  .cloud.c2{ top:22%; left:-260px; transform: scale(1.1); animation-duration: 36s;}
+  .cloud.c3{ top:35%; left:-220px; transform: scale(.85); animation-duration: 24s;}
+  @keyframes cloudMove { from{ transform: translateX(0) } to{ transform: translateX(120vw)} }
+
+  .ground{
+    position:absolute; left:0; right:0; height:18%;
+    bottom:0; background:linear-gradient(180deg,#a7d08c 0%,#7fc16b 60%,#65a856 100%);
+    border-top: 2px solid #6fbf6a;
+  }
+  .lane{
+    position:absolute; left:0; right:0; bottom:18%;
+    height:4px; background: repeating-linear-gradient(90deg,#fff 0 30px, #d9f4d9 30px 60px);
+    opacity:.8;
+  }
+
+  /* HUD */
+  .hud{
+    position:absolute; top:10px; left:10px; right:10px; display:flex; flex-wrap: wrap; align-items:center; justify-content:space-between; gap:8px; z-index:10;
+  }
+  .pill{
+    background:var(--card); backdrop-filter: blur(8px);
+    border:1px solid #e6f2ff; border-radius: 999px; padding:6px 12px; display:flex; gap:8px; align-items:center; font-weight:600;
+    box-shadow: 0 6px 20px rgba(13,37,69,.08);
+  }
+  .btn-icon{
+    border:none; background:var(--card); border:1px solid #e6f2ff;
+    border-radius: 12px; padding:8px 10px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+    box-shadow: 0 6px 20px rgba(13,37,69,.08);
+  }
+  .btn-icon:active{ transform: translateY(1px) }
+  .badge-diff{
+    font-size:.8rem; padding:.2rem .5rem; border-radius:999px; border:1px solid #e6f2ff; background:#fff;
+  }
+  .hud > .d-flex {
+    flex-basis: 100%;
+    justify-content: flex-end;
+  }
+  @media (min-width: 768px) {
+    .hud > .d-flex {
+        flex-basis: auto;
+    }
+  }
+
+
+  /* ENTITIES */
+  .entity{ position:absolute; will-change: transform; }
+  .player{
+    width:56px; height:56px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:26px; font-weight:800;
+    box-shadow: 0 10px 22px rgba(0,0,0,.15), inset 0 0 0 2px #ffffff22;
+    user-select:none;
+  }
+  .p-blue{ background: linear-gradient(145deg,#3b82f6,#1d4ed8)}
+  .p-pink{ background: linear-gradient(145deg,#ec4899,#be185d)}
+  .p-green{ background: linear-gradient(145deg,#22c55e,#16a34a)}
+  .p-gold{ background: linear-gradient(145deg,#f59e0b,#d97706)}
+
+  .shadow{
+    position:absolute; width:50px; height:8px; background: radial-gradient(ellipse at center, rgba(0,0,0,.25) 0%, rgba(0,0,0,0) 70%);
+    bottom: calc(18% - 4px); transform: translateX(-50%); pointer-events:none;
+  }
+
+  .obstacle, .collectible, .powerup{
+    padding:8px 14px; border-radius:10px; font-weight:700; color:#fff; white-space:nowrap; pointer-events:none;
+    border:1px solid #ffffff33; box-shadow: 0 8px 18px rgba(0,0,0,.18);
+  }
+  .obstacle{ background: linear-gradient(145deg,#ef4444,#b91c1c)}
+  .collectible{ background: linear-gradient(145deg,#22c55e,#15803d)}
+  .powerup{ background: linear-gradient(145deg,#f59e0b,#b45309)}
+
+  /* OVERLAYS */
+  .overlay{
+    position:absolute; inset:0; z-index:20; display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.65));
+    backdrop-filter: blur(6px);
+  }
+  .cardx{
+    width:min(680px,92%); background:#fff; border:1px solid #eef4ff; border-radius:18px; padding:18px;
+    box-shadow: 0 25px 60px rgba(13,37,69,.18);
+  }
+
+  .choice{ display:flex; gap:12px; flex-wrap:wrap; }
+  .chip{
+    border:1px solid #e7efff; border-radius:12px; padding:10px 12px; cursor:pointer; display:flex; align-items:center; gap:8px;
+    background:#f9fbff;
+  }
+  .chip.active{ outline:2px solid var(--accent); background:#eef5ff }
+
+  /* MOBILE CONTROLS */
+  .mobile-ctrl{
+    position:absolute; inset:0; display:flex; align-items:flex-end; justify-content:center; padding:12px; z-index:9; pointer-events:none;
+    touch-action: none;
+  }
+  .jump-btn{
+    pointer-events:auto; border:none; border-radius:999px; padding:14px 24px; font-weight:800; font-size:1.1rem; color:#fff;
+    background: linear-gradient(145deg,#2563eb,#1e3a8a); box-shadow: 0 12px 26px rgba(37,99,235,.35);
+    touch-action: none;
+  }
+
+  /* TOAST */
+  .toastx{
+    position:absolute; left:50%; top:16%; transform: translateX(-50%) translateY(-20px);
+    background:#111827; color:#fff; padding:8px 12px; border-radius:10px; font-weight:600; opacity:0; transition: .25s;
+    z-index:25;
+  }
+  .toastx.show{ opacity:1; transform: translateX(-50%) translateY(0) }
+
+  @media (max-width:576px){
+    .player{ width:50px; height:50px; font-size:22px }
+    .hud { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="game-shell" id="game">
+    <div class="layer sky">
+      <div class="cloud c1"></div>
+      <div class="cloud c2"></div>
+      <div class="cloud c3"></div>
+    </div>
+    <div class="layer lane"></div>
+    <div class="layer ground"></div>
+
+    <div class="layer hud">
+      <div class="pill" id="scorePill"><i class="bi bi-trophy-fill text-warning"></i> <span>Điểm:</span> <span id="score">0</span></div>
+      <div class="pill"><i class="bi bi-star-fill text-warning"></i> Kỷ lục: <span id="best">0</span></div>
+      <div class="pill"><i class="bi bi-heart-fill text-danger"></i> Mạng: <span id="lives">3</span></div>
+      <div class="pill"><i class="bi bi-lightning-charge-fill text-warning"></i> Cấp: <span id="level">1</span> <span class="badge-diff ms-2" id="diffBadge">Dễ</span></div>
+      <div class="d-flex gap-2">
+        <button class="btn-icon" id="btnPause"><i class="bi bi-pause-fill"></i><span class="d-none d-sm-inline">Tạm dừng</span></button>
+        <button class="btn-icon" id="btnMute"><i class="bi bi-volume-up-fill"></i></button>
+        <button class="btn-icon" id="btnRestart"><i class="bi bi-arrow-repeat"></i></button>
+      </div>
+    </div>
+
+    <div class="layer">
+      <div class="entity player p-blue" id="player" aria-label="Nhân vật" role="img">🙂</div>
+      <div class="shadow" id="shadow"></div>
+    </div>
+
+    <div class="layer" id="entities"></div>
+
+    <div class="overlay" id="startOverlay" aria-modal="true" role="dialog">
+      <div class="cardx">
+        <h2 class="fw-bold mb-2"><i class="bi bi-controller"></i> Chạy Vô Tận: Xây Dựng Tình Bạn+</h2>
+        <p class="text-secondary mb-3">Ăn <span class="text-success fw-bold">Hành vi Tốt</span> để cộng điểm, tránh <span class="text-danger fw-bold">Hành vi Xấu</span>. Nhặt <span class="text-warning fw-bold">Khiên</span> để chặn 1 lần va chạm.</p>
+
+        <div class="mb-3">
+            <div class="fw-bold mb-1">Điều khiển</div>
+            <div>- Máy tính: giữ phím <kbd>Space</kbd> để <strong>nhảy/giữ bay</strong>, nhả để rơi. <kbd>P</kbd> tạm dừng.</div>
+            <div>- Điện thoại: <strong>nhấn & giữ</strong> nút <b>NHẢY/BAY</b> hoặc <strong>chạm & giữ</strong> màn hình để bay, nhả để rơi.</div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="fw-bold mb-1">Chọn nhân vật</label>
+            <div class="choice" id="charChoice">
+              <div class="chip active" data-char="blue"><div class="player p-blue" style="width:36px;height:36px;font-size:18px;">🙂</div> Xanh</div>
+              <div class="chip" data-char="pink"><div class="player p-pink" style="width:36px;height:36px;font-size:18px;">😺</div> Hồng</div>
+              <div class="chip" data-char="green"><div class="player p-green" style="width:36px;height:36px;font-size:18px;">🦊</div> Lục</div>
+              <div class="chip" data-char="gold"><div class="player p-gold" style="width:36px;height:36px;font-size:18px;">🐻</div> Vàng</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="fw-bold mb-1">Độ khó</label>
+            <div class="choice" id="diffChoice">
+              <div class="chip active" data-diff="easy"><i class="bi bi-emoji-smile"></i> Dễ</div>
+              <div class="chip" data-diff="normal"><i class="bi bi-emoji-neutral"></i> Vừa</div>
+              <div class="chip" data-diff="hard"><i class="bi bi-emoji-dizzy"></i> Khó</div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="my-3">
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary btn-lg" id="btnStart"><i class="bi bi-play-fill"></i> Bắt đầu</button>
+          <button class="btn btn-outline-secondary" id="btnHow">Luật & Gợi ý</button>
+        </div>
+        <div class="small text-secondary mt-2">Tip: Nhảy sớm 1 chút để vượt chướng ngại tốc độ cao. Khiên tồn tại 8 giây.</div>
+      </div>
+    </div>
+
+    <div class="overlay d-none" id="gameOver" aria-modal="true" role="dialog">
+      <div class="cardx text-center">
+        <h3 class="fw-bold">Kết thúc!</h3>
+        <div class="display-6 text-primary">Điểm: <span id="finalScore">0</span></div>
+        <div class="mt-1">Kỷ lục: <span class="fw-bold" id="finalBest">0</span></div>
+        <div class="mt-3 d-flex justify-content-center gap-2">
+          <button class="btn btn-primary" id="btnPlayAgain"><i class="bi bi-arrow-repeat"></i> Chơi lại</button>
+          <button class="btn btn-outline-secondary" id="btnChange"><i class="bi bi-sliders"></i> Đổi nhân vật/độ khó</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-ctrl">
+      <button class="jump-btn" id="btnJump"><i class="bi bi-chevron-up"></i> NHẢY / BAY (GIỮ)</button>
+    </div>
+
+    <div class="toastx" id="toast">+10 điểm</div>
+  </div>
+
+  <div class="container" style="max-width:900px; overflow:auto;">
+    <h2 class="text-center fw-bold mt-2">Nội dung ghi bài 📝</h2>
+    <div class="accordion mb-3" id="noteAcc">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#n1">Bài học từ "Hành vi tốt" <i class="bi bi-check-circle-fill text-success ms-2"></i></button>
+        </h2>
+        <div id="n1" class="accordion-collapse collapse show">
+          <div class="accordion-body">
+            <ul class="mb-0">
+              <li><b>Giúp đỡ, bảo vệ bạn:</b> luôn sẵn sàng khi bạn gặp khó khăn.</li>
+              <li><b>Học nhóm – cùng tiến bộ:</b> hợp tác là chìa khóa.</li>
+              <li><b>Lắng nghe – tôn trọng:</b> tôn trọng khác biệt.</li>
+              <li><b>Chặn/Báo cáo:</b> dùng công cụ an toàn trên mạng.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item mt-2">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#n2">Bài học từ "Hành vi xấu" <i class="bi bi-x-circle-fill text-danger ms-2"></i></button>
+        </h2>
+        <div id="n2" class="accordion-collapse collapse">
+          <div class="accordion-body">
+            <ul class="mb-0">
+              <li><b>Tin đồn, nói xấu:</b> không tham gia, không cổ vũ.</li>
+              <li><b>Bắt nạt online:</b> dừng lại và xin trợ giúp.</li>
+              <li><b>Người lạ online:</b> giữ kín thông tin cá nhân.</li>
+              <li><b>Rủ rê xấu:</b> mạnh dạn từ chối.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ======= TIỆN ÍCH ÂM THANH NHẸ ======= */
+function makeBeep(freq=880, dur=80, vol=0.06){
+  if(settings.muted) return;
+  try{
+    const ctx = (makeBeep.ctx ||= new (window.AudioContext||window.webkitAudioContext)());
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.type='sine'; o.frequency.value=freq; g.gain.value=vol;
+    o.connect(g).connect(ctx.destination);
+    o.start(); o.stop(ctx.currentTime + dur/1000);
+  }catch(e){ /* no audio */ }
+}
+
+/* ======= NGUỒN DỮ LIỆU ======= */
+const GOOD = [
+  { text:'Giúp đỡ bạn <i class="bi bi-heart-fill"></i>', pts:10 },
+  { text:'Bảo vệ bạn <i class="bi bi-shield-fill-check"></i>', pts:10 },
+  { text:'Học nhóm <i class="bi bi-book-fill"></i>', pts:6 },
+  { text:'Lắng nghe <i class="bi bi-ear-fill"></i>', pts:6 },
+  { text:'Chặn người xấu <i class="bi bi-slash-circle-fill"></i>', pts:14 },
+];
+const BAD = [
+  'Tin đồn <i class="bi bi-cloud-slash-fill"></i>',
+  'Nói xấu <i class="bi bi-chat-right-text-fill"></i>',
+  'Bắt nạt Online <i class="bi bi-emoji-angry-fill"></i>',
+  'Người lạ Online <i class="bi bi-person-fill-exclamation"></i>',
+  'Rủ rê việc xấu <i class="bi bi-exclamation-triangle-fill"></i>',
+];
+
+/* ======= DOM ======= */
+const game = document.getElementById('game');
+const entitiesLayer = document.getElementById('entities');
+const playerEl = document.getElementById('player');
+const shadowEl = document.getElementById('shadow');
+const scoreEl = document.getElementById('score');
+const bestEl = document.getElementById('best');
+const livesEl = document.getElementById('lives');
+const levelEl = document.getElementById('level');
+const diffBadge = document.getElementById('diffBadge');
+const startOverlay = document.getElementById('startOverlay');
+const gameOver = document.getElementById('gameOver');
+const btnStart = document.getElementById('btnStart');
+const btnPlayAgain = document.getElementById('btnPlayAgain');
+const btnChange = document.getElementById('btnChange');
+const btnPause = document.getElementById('btnPause');
+const btnRestart = document.getElementById('btnRestart');
+const btnMute = document.getElementById('btnMute');
+const btnJump = document.getElementById('btnJump');
+const finalScore = document.getElementById('finalScore');
+const finalBest = document.getElementById('finalBest');
+const toast = document.getElementById('toast');
+const charChoice = document.getElementById('charChoice');
+const diffChoice = document.getElementById('diffChoice');
+
+const DIFFS = {
+  easy:   {speed: 240, spawn: 1050, badRate: 0.52, lives:3, label:'Dễ',   g:1300, thrust:1900, maxAscend: -620},
+  normal: {speed: 300, spawn: 900,  badRate: 0.62, lives:2, label:'Vừa',  g:1550, thrust:2000, maxAscend: -700},
+  hard:   {speed: 360, spawn: 780,  badRate: 0.72, lives:1, label:'Khó',  g:1750, thrust:2100, maxAscend: -760},
+};
+
+let settings = { char:'blue', diff:'easy', muted:false };
+let holdUp = false;
+
+/* ======= BẮT LỖI LOCALSTORAGE AN TOÀN ======= */
+function loadBest(){
+  try{
+    const v = localStorage.getItem('friendrunner_best') ?? '0';
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }catch(e){ return 0; }
+}
+function saveBest(v){
+  try{ localStorage.setItem('friendrunner_best', String(v)); }catch(e){}
+}
+bestEl.textContent = loadBest();
+
+/* ======= TRẠNG THÁI GAME ======= */
+const state = {
+  w: 0, h: 0, groundY: 0,
+  running:false, paused:false, over:false,
+  score:0, best: loadBest(), lives: 3,
+  level:1, levelTimer:0,
+  speed: 240,
+  spawnEvery: 1050,
+  lastSpawn:0,
+  badRate: 0.52,
+  shield:false, shieldTimer:0,
+
+  player: { x:120, y:0, vy:0, w:56, h:56 },
+  ents:[],
+  lastT: performance.now()
+};
+
+/* ======= TIỆN ÍCH UI ======= */
+function setChipActive(container, target){
+  [...container.querySelectorAll('.chip')].forEach(c=>c.classList.remove('active'));
+  target.classList.add('active');
+}
+charChoice.addEventListener('click', (e)=>{
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  setChipActive(charChoice, chip);
+  settings.char = chip.dataset.char;
+});
+diffChoice.addEventListener('click', (e)=>{
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  setChipActive(diffChoice, chip);
+  settings.diff = chip.dataset.diff;
+});
+document.getElementById('btnHow').addEventListener('click', ()=>{
+  alert('Ăn “Hành vi tốt” để +điểm, tránh “Hành vi xấu”. Nhặt “Khiên” để chặn 1 lần va chạm (tối đa 8 giây). Tốc độ và độ khó tăng theo cấp.');
+});
+
+/* ======= KHỞI TẠO LẠI TỪ CÀI ĐẶT ======= */
+function applySettings(){
+  const d = DIFFS[settings.diff];
+  state.lives = d.lives; state.badRate = d.badRate; state.speed = d.speed; state.spawnEvery = d.spawn;
+  
+  state.level = 1; state.levelTimer = 0; state.score = 0; state.ents.length = 0;
+  state.shield = false; state.shieldTimer = 0;
+  livesEl.textContent = state.lives; levelEl.textContent = state.level; diffBadge.textContent = d.label;
+  scoreEl.textContent = 0;
+  entitiesLayer.innerHTML='';
+  const skins = {blue:['p-blue','🙂'], pink:['p-pink','😺'], green:['p-green','🦊'], gold:['p-gold','🐻']};
+  const [cls, emoji] = skins[settings.char] || skins.blue;
+  playerEl.className = 'entity player '+cls;
+  playerEl.textContent = emoji;
+}
+
+/* ======= BỐ CỤC/RESIZE ======= */
+function measure(){
+  const rect = game.getBoundingClientRect();
+  state.w = rect.width; state.h = rect.height;
+  state.groundY = state.h * 0.82;
+  state.player.w = playerEl.offsetWidth;
+  state.player.h = playerEl.offsetHeight;
+}
+window.addEventListener('resize', measure);
+
+
+/* ======= ĐẶT VỊ TRÍ NHÂN VẬT ======= */
+function placePlayer(){
+  const p = state.player;
+  playerEl.style.transform = `translate(${p.x}px, ${p.y}px)`;
+  shadowEl.style.left = (p.x + p.w/2)+'px';
+}
+
+/* ======= SPAWN ENTITIES ======= */
+function rnd(a,b){ return a + Math.random()*(b-a) }
+function spawn(){
+  const r = Math.random();
+  let type = 'good';
+  if(r < state.badRate) type='bad';
+  else if(r > 0.92) type='power';
+
+  const e = document.createElement('div');
+  e.classList.add('entity');
+  let y = state.groundY - 56;
+
+  if(type==='bad'){
+    e.classList.add('obstacle');
+    e.innerHTML = BAD[(Math.random()*BAD.length)|0];
+    y = state.groundY - rnd(48,64);
+  }else if(type==='power'){
+    e.classList.add('powerup');
+    e.innerHTML = 'Khiên <i class="bi bi-shield-fill"></i>';
+    y = state.groundY - rnd(120,160);
+  }else{
+    e.classList.add('collectible');
+    const it = GOOD[(Math.random()*GOOD.length)|0];
+    e.innerHTML = it.text;
+    e.dataset.pts = it.pts;
+    y = state.groundY - rnd(90,140);
+  }
+
+  entitiesLayer.appendChild(e);
+  const rr = e.getBoundingClientRect();
+  const speed = state.speed * rnd(.92,1.15);
+
+  const obj = {
+    node: e, x: state.w + 20, y, w: rr.width, h: rr.height,
+    vx: -speed, type,
+    alive: true
+  };
+  state.ents.push(obj);
+}
+
+/* ======= VÒNG LẶP GAME (FPS-ĐỘC LẬP) ======= */
+function step(t){
+  if (state.over) {
+      requestAnimationFrame(step); // Keep the loop going even when game over to catch restart
+      return;
+  }
+
+  const dt = Math.min(0.032, (t - state.lastT)/1000);
+  state.lastT = t;
+  
+  if(!state.running || state.paused){ 
+      requestAnimationFrame(step); 
+      return; 
+  }
+  
+  // Level/difficulty scaling over time
+  state.levelTimer += dt;
+  if(state.levelTimer >= 12){
+    state.levelTimer = 0;
+    state.level++;
+    state.speed *= 1.07;
+    state.spawnEvery = Math.max(520, state.spawnEvery - 40);
+    levelEl.textContent = state.level;
+    flashScorePill('Cấp '+state.level);
+    makeBeep(520,80,.08);
+  }
+
+  // Shield timer logic
+  if (state.shield) {
+      state.shieldTimer -= dt;
+      if (state.shieldTimer <= 0) {
+          state.shield = false;
+          playerEl.style.boxShadow = '0 10px 22px rgba(0,0,0,.15), inset 0 0 0 2px #ffffff22'; // Reset shadow
+          showToast('Khiên hết hạn!', 800);
+      }
+  }
+
+  // Spawner logic
+  state.lastSpawn += dt * 1000;
+  if (state.lastSpawn > state.spawnEvery) {
+      spawn();
+      state.lastSpawn = 0;
+  }
+
+  // Player physics
+  const p = state.player;
+  const dcur = DIFFS[settings.diff];
+  p.vy += dcur.g * dt;
+  if(holdUp){
+    p.vy -= dcur.thrust * dt;
+    if(p.vy < dcur.maxAscend) p.vy = dcur.maxAscend;
+  }
+  p.y += p.vy * dt;
+
+  if(p.y >= state.groundY - p.h){
+    p.y = state.groundY - p.h;
+    p.vy = 0;
+  }
+  const topLimit = state.h * 0.06;
+  if(p.y < topLimit){
+    p.y = topLimit;
+    if(p.vy < 0) p.vy = 0;
+  }
+  placePlayer();
+
+  // Update and check entities
+  for(let i = state.ents.length - 1; i >= 0; i--) {
+      const e = state.ents[i];
+      e.x += e.vx * dt;
+      e.node.style.transform = `translate(${e.x}px, ${e.y}px)`;
+
+      if (e.x < - (e.w || 150)) { // Give some buffer
+          e.alive = false;
+      }
+      
+      // Collision check
+      const pRect = { left: p.x, right: p.x + p.w, top: p.y, bottom: p.y + p.h };
+      const eRect = { left: e.x, right: e.x + e.w, top: e.y, bottom: e.y + e.h };
+      if (e.alive && intersect(pRect, eRect)) {
+          if (e.type === 'bad') handleHit(e);
+          else if (e.type === 'power') pickupShield(e);
+          else collectGood(e);
+      }
+
+      if (!e.alive) {
+          safeRemove(e.node);
+          state.ents.splice(i, 1);
+      }
+  }
+
+  requestAnimationFrame(step);
+}
+
+function intersect(a,b){
+  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+}
+
+/* ======= TÁC ĐỘNG SỰ KIỆN ======= */
+function handleHit(obj){
+  if (!obj.alive) return; // Prevent double hits
+  obj.alive=false;
+  if(state.shield){
+    state.shield=false;
+    playerEl.style.boxShadow = '0 10px 22px rgba(0,0,0,.15), inset 0 0 0 2px #ffffff22';
+    showToast('Khiên đã chặn va chạm!', 900);
+    makeBeep(260,90,.08);
+    return;
+  }
+
+  state.lives--; livesEl.textContent = Math.max(0,state.lives);
+  flashRed();
+  makeBeep(180,120,.12);
+
+  if(state.lives<=0){
+    return gameOverNow();
+  }
+}
+
+function pickupShield(obj){
+  if (!obj.alive) return;
+  obj.alive=false;
+  state.shield = true; state.shieldTimer = 8;
+  playerEl.style.boxShadow = '0 0 0 3px #fbbf24, 0 10px 22px rgba(0,0,0,.15)';
+  showToast('Nhận Khiên (8s)!', 900);
+  makeBeep(820,80,.09);
+}
+
+function collectGood(obj){
+  if (!obj.alive) return;
+  obj.alive=false;
+  const pts = Number(obj.node.dataset.pts)||8;
+  state.score += pts;
+  scoreEl.textContent = state.score;
+  showToast('+'+pts+' điểm', 650);
+  makeBeep(980,60,.08);
+}
+
+/* ======= HIỆU ỨNG NHANH ======= */
+function showToast(msg, ms=700){
+  toast.innerHTML = msg;
+  toast.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>toast.classList.remove('show'), ms);
+}
+function flashRed(){
+  game.style.transition='background-color .12s';
+  game.style.backgroundColor='#ffd9d9';
+  setTimeout(()=>{ game.style.backgroundColor=''; game.style.transition=''; }, 120);
+}
+function flashScorePill(txt){
+  const pill = document.getElementById('scorePill');
+  const old = pill.innerHTML;
+  pill.innerHTML = `<i class="bi bi-lightning-fill text-warning"></i> ${txt}`;
+  pill.style.transform='scale(1.06)';
+  setTimeout(()=>{ pill.style.transform='scale(1)'; pill.innerHTML = old; }, 650);
+}
+function safeRemove(n){ try{ n.remove(); }catch(e){} }
+
+/* ======= VÒNG ĐỜI GAME ======= */
+function startGame(){
+  startOverlay.classList.add('d-none');
+  gameOver.classList.add('d-none');
+  state.over=false; state.running=true; state.paused=false;
+  state.lastT = performance.now();
+  measure();
+  
+  const p = state.player;
+  p.x = 120; p.y = state.groundY - p.h; p.vy=0;
+  placePlayer();
+  requestAnimationFrame(step);
+}
+function gameOverNow(){
+  state.over=true; state.running=false;
+  finalScore.textContent = state.score;
+  state.best = Math.max(state.best, state.score);
+  bestEl.textContent = state.best; finalBest.textContent = state.best;
+  saveBest(state.best);
+  setTimeout(()=> gameOver.classList.remove('d-none'), 250);
+}
+function pauseToggle(){
+  if(!state.running || state.over) return;
+  state.paused = !state.paused;
+  btnPause.innerHTML = state.paused ? `<i class="bi bi-play-fill"></i><span class="d-none d-sm-inline">Tiếp tục</span>` : `<i class="bi bi-pause-fill"></i><span class="d-none d-sm-inline">Tạm dừng</span>`;
+  if(!state.paused){ state.lastT = performance.now(); }
+}
+
+/* ======= SỰ KIỆN ======= */
+btnStart.addEventListener('click', ()=>{ applySettings(); startGame(); });
+btnPlayAgain.addEventListener('click', ()=>{ applySettings(); startGame(); });
+btnChange.addEventListener('click', ()=>{
+  gameOver.classList.add('d-none');
+  startOverlay.classList.remove('d-none');
+});
+btnPause.addEventListener('click', pauseToggle);
+btnRestart.addEventListener('click', ()=>{ applySettings(); startGame(); });
+btnMute.addEventListener('click', ()=>{
+  settings.muted = !settings.muted;
+  btnMute.innerHTML = settings.muted ? `<i class="bi bi-volume-mute-fill"></i>` : `<i class="bi bi-volume-up-fill"></i>`;
+});
+window.addEventListener('keydown', (e)=>{ if(e.code==='Space') e.preventDefault(); }, {passive:false});
+
+document.addEventListener('keydown', (e)=>{
+  if(e.code === 'Space'){ holdUp = true; }
+  else if(e.key==='p'||e.key==='P'){ pauseToggle(); }
+  else if(e.key==='r'||e.key==='R'){ applySettings(); startGame(); }
+});
+document.addEventListener('keyup', (e)=>{
+  if(e.code === 'Space'){ holdUp = false; }
+});
+
+const startHold = (e)=>{ e.preventDefault(); holdUp = true; };
+const endHold   = (e)=>{ e.preventDefault(); holdUp = false; };
+
+game.addEventListener('pointerdown', startHold, {passive:false});
+game.addEventListener('pointerup',   endHold,   {passive:false});
+game.addEventListener('pointerleave', endHold, {passive:false}); // Added to handle pointer leaving game area
+game.addEventListener('pointercancel',endHold,   {passive:false});
+btnJump.addEventListener('pointerdown', startHold, {passive:false});
+btnJump.addEventListener('pointerup',   endHold,   {passive:false});
+btnJump.addEventListener('pointercancel',endHold,   {passive:false});
+
+
+/* ======= KHỞI TẠO ======= */
+applySettings(); placePlayer(); measure();
+
+/* ======= BONUS: ANTICRASH GUARDS ======= */
+window.addEventListener('error', (ev)=>{
+  console.warn('Lỗi đã được bắt:', ev.message);
+  showToast('Đã tự phục hồi!', 900);
+});
+window.addEventListener('unhandledrejection', (ev)=>{
+  console.warn('Promise lỗi:', ev.reason);
+  showToast('Sự cố nhỏ được xử lý', 900);
+});
+</script>
+
+</body>
+</html>
