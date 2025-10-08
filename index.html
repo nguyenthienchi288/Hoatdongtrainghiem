@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-<title>Chạy Vô Tận: Tình Bạn+ (Bản Sửa Lỗi)</title>
+<title>Chạy Vô Tận: Tình Bạn+ (Bản Nâng Cấp)</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
@@ -43,9 +43,7 @@
     background: #cfe9ff;
     border:2px solid #b5d9ff;
   }
-  .layer{
-    position:absolute; inset:0;
-  }
+  .layer{ position:absolute; inset:0; }
   .sky{
     background: linear-gradient(180deg,#cfe9ff 0%,#e9f5ff 65%,#fff 100%);
   }
@@ -72,7 +70,7 @@
 
   /* HUD */
   .hud{
-    position:absolute; top:10px; left:10px; right:10px; display:flex; flex-wrap: wrap; align-items:center; justify-content:space-between; gap:8px; z-index:10;
+    position:absolute; top:10px; left:10px; right:10px; display:flex; align-items:center; justify-content:space-between; gap:8px; z-index:10;
   }
   .pill{
     background:var(--card); backdrop-filter: blur(8px);
@@ -88,16 +86,6 @@
   .badge-diff{
     font-size:.8rem; padding:.2rem .5rem; border-radius:999px; border:1px solid #e6f2ff; background:#fff;
   }
-  .hud > .d-flex {
-    flex-basis: 100%;
-    justify-content: flex-end;
-  }
-  @media (min-width: 768px) {
-    .hud > .d-flex {
-        flex-basis: auto;
-    }
-  }
-
 
   /* ENTITIES */
   .entity{ position:absolute; will-change: transform; }
@@ -114,7 +102,7 @@
 
   .shadow{
     position:absolute; width:50px; height:8px; background: radial-gradient(ellipse at center, rgba(0,0,0,.25) 0%, rgba(0,0,0,0) 70%);
-    bottom: calc(18% - 4px); transform: translateX(-50%); pointer-events:none;
+    bottom: calc(18% + 2px); transform: translateX(-50%); pointer-events:none;
   }
 
   .obstacle, .collectible, .powerup{
@@ -146,17 +134,18 @@
   /* MOBILE CONTROLS */
   .mobile-ctrl{
     position:absolute; inset:0; display:flex; align-items:flex-end; justify-content:center; padding:12px; z-index:9; pointer-events:none;
-    touch-action: none;
   }
+  /* Cho cảm ứng mượt khi giữ */
+  #game, .mobile-ctrl, .jump-btn { touch-action: none; }
+
   .jump-btn{
     pointer-events:auto; border:none; border-radius:999px; padding:14px 24px; font-weight:800; font-size:1.1rem; color:#fff;
     background: linear-gradient(145deg,#2563eb,#1e3a8a); box-shadow: 0 12px 26px rgba(37,99,235,.35);
-    touch-action: none;
   }
 
   /* TOAST */
   .toastx{
-    position:absolute; left:50%; top:16%; transform: translateX(-50%) translateY(-20px);
+    position:absolute; left:50%; top:16%; transform: translateX(-50%);
     background:#111827; color:#fff; padding:8px 12px; border-radius:10px; font-weight:600; opacity:0; transition: .25s;
     z-index:25;
   }
@@ -164,7 +153,6 @@
 
   @media (max-width:576px){
     .player{ width:50px; height:50px; font-size:22px }
-    .hud { justify-content: center; }
   }
 </style>
 </head>
@@ -172,6 +160,7 @@
 <div class="page">
 
   <div class="game-shell" id="game">
+    <!-- BACKGROUND -->
     <div class="layer sky">
       <div class="cloud c1"></div>
       <div class="cloud c2"></div>
@@ -180,6 +169,7 @@
     <div class="layer lane"></div>
     <div class="layer ground"></div>
 
+    <!-- HUD -->
     <div class="layer hud">
       <div class="pill" id="scorePill"><i class="bi bi-trophy-fill text-warning"></i> <span>Điểm:</span> <span id="score">0</span></div>
       <div class="pill"><i class="bi bi-star-fill text-warning"></i> Kỷ lục: <span id="best">0</span></div>
@@ -192,22 +182,25 @@
       </div>
     </div>
 
+    <!-- PLAYER + SHADOW -->
     <div class="layer">
       <div class="entity player p-blue" id="player" aria-label="Nhân vật" role="img">🙂</div>
       <div class="shadow" id="shadow"></div>
     </div>
 
+    <!-- ENTITIES CONTAINER -->
     <div class="layer" id="entities"></div>
 
+    <!-- OVERLAYS -->
     <div class="overlay" id="startOverlay" aria-modal="true" role="dialog">
       <div class="cardx">
         <h2 class="fw-bold mb-2"><i class="bi bi-controller"></i> Chạy Vô Tận: Xây Dựng Tình Bạn+</h2>
         <p class="text-secondary mb-3">Ăn <span class="text-success fw-bold">Hành vi Tốt</span> để cộng điểm, tránh <span class="text-danger fw-bold">Hành vi Xấu</span>. Nhặt <span class="text-warning fw-bold">Khiên</span> để chặn 1 lần va chạm.</p>
 
         <div class="mb-3">
-            <div class="fw-bold mb-1">Điều khiển</div>
-            <div>- Máy tính: giữ phím <kbd>Space</kbd> để <strong>nhảy/giữ bay</strong>, nhả để rơi. <kbd>P</kbd> tạm dừng.</div>
-            <div>- Điện thoại: <strong>nhấn & giữ</strong> nút <b>NHẢY/BAY</b> hoặc <strong>chạm & giữ</strong> màn hình để bay, nhả để rơi.</div>
+          <div class="fw-bold mb-1">Điều khiển</div>
+          <div>- Máy tính: giữ phím <kbd>Space</kbd> để <b>nhảy/giữ bay</b>, nhả để rơi. <kbd>P</kbd> tạm dừng.</div>
+          <div>- Điện thoại: <b>nhấn & giữ</b> nút NHẢY/BAY hoặc <b>chạm & giữ</b> màn hình để bay, nhả để rơi.</div>
         </div>
 
         <div class="row g-3">
@@ -251,20 +244,57 @@
       </div>
     </div>
 
+    <!-- MOBILE CONTROLS -->
     <div class="mobile-ctrl">
       <button class="jump-btn" id="btnJump"><i class="bi bi-chevron-up"></i> NHẢY / BAY (GIỮ)</button>
     </div>
 
+    <!-- TOAST -->
     <div class="toastx" id="toast">+10 điểm</div>
+  </div>
+
+  <!-- Notes accordion -->
+  <div class="container" style="max-width:900px; overflow:auto;">
+    <h2 class="text-center fw-bold mt-2">Nội dung ghi bài 📝</h2>
+    <div class="accordion mb-3" id="noteAcc">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#n1">Bài học từ "Hành vi tốt" <i class="bi bi-check-circle-fill text-success ms-2"></i></button>
+        </h2>
+        <div id="n1" class="accordion-collapse collapse show">
+          <div class="accordion-body">
+            <ul class="mb-0">
+              <li><b>Giúp đỡ, bảo vệ bạn:</b> luôn sẵn sàng khi bạn gặp khó khăn.</li>
+              <li><b>Học nhóm – cùng tiến bộ:</b> hợp tác là chìa khóa.</li>
+              <li><b>Lắng nghe – tôn trọng:</b> tôn trọng khác biệt.</li>
+              <li><b>Chặn/Báo cáo:</b> dùng công cụ an toàn trên mạng.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item mt-2">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#n2">Bài học từ "Hành vi xấu" <i class="bi bi-x-circle-fill text-danger ms-2"></i></button>
+        </h2>
+        <div id="n2" class="accordion-collapse collapse">
+          <div class="accordion-body">
+            <ul class="mb-0">
+              <li><b>Tin đồn, nói xấu:</b> không tham gia, không cổ vũ.</li>
+              <li><b>Bắt nạt online:</b> dừng lại và xin trợ giúp.</li>
+              <li><b>Người lạ online:</b> giữ kín thông tin cá nhân.</li>
+              <li><b>Rủ rê xấu:</b> mạnh dạn từ chối.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 /* ======= TIỆN ÍCH ÂM THANH NHẸ ======= */
 function makeBeep(freq=880, dur=80, vol=0.06){
-  if(settings.muted) return;
   try{
     const ctx = (makeBeep.ctx ||= new (window.AudioContext||window.webkitAudioContext)());
     const o = ctx.createOscillator(); const g = ctx.createGain();
@@ -295,13 +325,16 @@ const game = document.getElementById('game');
 const entitiesLayer = document.getElementById('entities');
 const playerEl = document.getElementById('player');
 const shadowEl = document.getElementById('shadow');
+
 const scoreEl = document.getElementById('score');
 const bestEl = document.getElementById('best');
 const livesEl = document.getElementById('lives');
 const levelEl = document.getElementById('level');
 const diffBadge = document.getElementById('diffBadge');
+
 const startOverlay = document.getElementById('startOverlay');
 const gameOver = document.getElementById('gameOver');
+
 const btnStart = document.getElementById('btnStart');
 const btnPlayAgain = document.getElementById('btnPlayAgain');
 const btnChange = document.getElementById('btnChange');
@@ -309,22 +342,26 @@ const btnPause = document.getElementById('btnPause');
 const btnRestart = document.getElementById('btnRestart');
 const btnMute = document.getElementById('btnMute');
 const btnJump = document.getElementById('btnJump');
+
 const finalScore = document.getElementById('finalScore');
 const finalBest = document.getElementById('finalBest');
 const toast = document.getElementById('toast');
+
 const charChoice = document.getElementById('charChoice');
 const diffChoice = document.getElementById('diffChoice');
 
+/* ======= ĐỘ KHÓ (kèm tham số vật lý) ======= */
 const DIFFS = {
+  // g: trọng lực (px/s^2), thrust: lực đẩy lên khi giữ (px/s^2), maxAscend: tốc độ bay lên tối đa (px/s)
   easy:   {speed: 240, spawn: 1050, badRate: 0.52, lives:3, label:'Dễ',   g:1300, thrust:1900, maxAscend: -620},
   normal: {speed: 300, spawn: 900,  badRate: 0.62, lives:2, label:'Vừa',  g:1550, thrust:2000, maxAscend: -700},
   hard:   {speed: 360, spawn: 780,  badRate: 0.72, lives:1, label:'Khó',  g:1750, thrust:2100, maxAscend: -760},
 };
 
 let settings = { char:'blue', diff:'easy', muted:false };
-let holdUp = false;
+let holdUp = false; // đang giữ để bay
 
-/* ======= BẮT LỖI LOCALSTORAGE AN TOÀN ======= */
+/* ======= LOCALSTORAGE AN TOÀN ======= */
 function loadBest(){
   try{
     const v = localStorage.getItem('friendrunner_best') ?? '0';
@@ -339,22 +376,25 @@ bestEl.textContent = loadBest();
 
 /* ======= TRẠNG THÁI GAME ======= */
 const state = {
-  w: 0, h: 0, groundY: 0,
+  w: 0, h: 0,
+  gravity: 1500, // sẽ bị ghi đè theo DIFFS
+  jumpVy: -620,  // fallback (không dùng cho cơ chế giữ)
+  groundY: 0,
   running:false, paused:false, over:false,
-  score:0, best: loadBest(), lives: 3,
+  score:0, best: loadBest(), lives: DIFFS[settings.diff].lives,
   level:1, levelTimer:0,
-  speed: 240,
-  spawnEvery: 1050,
+  speed: DIFFS[settings.diff].speed,
+  spawnEvery: DIFFS[settings.diff].spawn,
   lastSpawn:0,
-  badRate: 0.52,
+  badRate: DIFFS[settings.diff].badRate,
   shield:false, shieldTimer:0,
 
-  player: { x:120, y:0, vy:0, w:56, h:56 },
+  player: { x:120, y:0, vy:0, w:56, h:56, onGround:true, skin:'blue', emoji:'🙂' },
   ents:[],
   lastT: performance.now()
 };
 
-/* ======= TIỆN ÍCH UI ======= */
+/* ======= UI ======= */
 function setChipActive(container, target){
   [...container.querySelectorAll('.chip')].forEach(c=>c.classList.remove('active'));
   target.classList.add('active');
@@ -370,47 +410,53 @@ diffChoice.addEventListener('click', (e)=>{
   if(!chip) return;
   setChipActive(diffChoice, chip);
   settings.diff = chip.dataset.diff;
+  diffBadge.textContent = DIFFS[settings.diff].label;
 });
 document.getElementById('btnHow').addEventListener('click', ()=>{
-  alert('Ăn “Hành vi tốt” để +điểm, tránh “Hành vi xấu”. Nhặt “Khiên” để chặn 1 lần va chạm (tối đa 8 giây). Tốc độ và độ khó tăng theo cấp.');
+  alert('Ăn “Hành vi tốt” để +điểm, tránh “Hành vi xấu”. Nhặt “Khiên” để chặn 1 lần va chạm (tối đa 8 giây). Tốc độ & độ khó tăng theo cấp. Giữ để bay!');
 });
 
-/* ======= KHỞI TẠO LẠI TỪ CÀI ĐẶT ======= */
+/* ======= ÁP DỤNG CÀI ĐẶT ======= */
 function applySettings(){
   const d = DIFFS[settings.diff];
   state.lives = d.lives; state.badRate = d.badRate; state.speed = d.speed; state.spawnEvery = d.spawn;
-  
+  state.gravity = d.g;
+
   state.level = 1; state.levelTimer = 0; state.score = 0; state.ents.length = 0;
   state.shield = false; state.shieldTimer = 0;
   livesEl.textContent = state.lives; levelEl.textContent = state.level; diffBadge.textContent = d.label;
   scoreEl.textContent = 0;
   entitiesLayer.innerHTML='';
+
+  // set player skin
   const skins = {blue:['p-blue','🙂'], pink:['p-pink','😺'], green:['p-green','🦊'], gold:['p-gold','🐻']};
   const [cls, emoji] = skins[settings.char] || skins.blue;
   playerEl.className = 'entity player '+cls;
   playerEl.textContent = emoji;
+  state.player.emoji = emoji; state.player.skin = settings.char;
 }
 
-/* ======= BỐ CỤC/RESIZE ======= */
+/* ======= KÍCH THƯỚC ======= */
 function measure(){
   const rect = game.getBoundingClientRect();
   state.w = rect.width; state.h = rect.height;
-  state.groundY = state.h * 0.82;
-  state.player.w = playerEl.offsetWidth;
-  state.player.h = playerEl.offsetHeight;
+  state.groundY = state.h * 0.82; // top of ground
 }
 window.addEventListener('resize', measure);
+measure();
 
-
-/* ======= ĐẶT VỊ TRÍ NHÂN VẬT ======= */
+/* ======= VẼ NHÂN VẬT ======= */
 function placePlayer(){
   const p = state.player;
+  if(p.y > state.groundY - p.h){ p.y = state.groundY - p.h; p.vy = 0; p.onGround = true; }
   playerEl.style.transform = `translate(${p.x}px, ${p.y}px)`;
   shadowEl.style.left = (p.x + p.w/2)+'px';
 }
 
-/* ======= SPAWN ENTITIES ======= */
+/* ======= NGẪU NHIÊN ======= */
 function rnd(a,b){ return a + Math.random()*(b-a) }
+
+/* ======= SPAWN ENTITIES ======= */
 function spawn(){
   const r = Math.random();
   let type = 'good';
@@ -419,6 +465,7 @@ function spawn(){
 
   const e = document.createElement('div');
   e.classList.add('entity');
+  let speed = state.speed * rnd(.92,1.15);
   let y = state.groundY - 56;
 
   if(type==='bad'){
@@ -437,34 +484,23 @@ function spawn(){
     y = state.groundY - rnd(90,140);
   }
 
+  const obj = {
+    node: e, x: state.w + 20, y, w: 120, h: 44,
+    vx: -speed, type, alive: true
+  };
   entitiesLayer.appendChild(e);
   const rr = e.getBoundingClientRect();
-  const speed = state.speed * rnd(.92,1.15);
-
-  const obj = {
-    node: e, x: state.w + 20, y, w: rr.width, h: rr.height,
-    vx: -speed, type,
-    alive: true
-  };
+  obj.w = rr.width; obj.h = rr.height;
   state.ents.push(obj);
 }
 
-/* ======= VÒNG LẶP GAME (FPS-ĐỘC LẬP) ======= */
+/* ======= VÒNG LẶP GAME ======= */
 function step(t){
-  if (state.over) {
-      requestAnimationFrame(step); // Keep the loop going even when game over to catch restart
-      return;
-  }
-
   const dt = Math.min(0.032, (t - state.lastT)/1000);
   state.lastT = t;
-  
-  if(!state.running || state.paused){ 
-      requestAnimationFrame(step); 
-      return; 
-  }
-  
-  // Level/difficulty scaling over time
+  if(!state.running || state.paused || state.over){ requestAnimationFrame(step); return; }
+
+  // Tăng cấp
   state.levelTimer += dt;
   if(state.levelTimer >= 12){
     state.levelTimer = 0;
@@ -473,70 +509,66 @@ function step(t){
     state.spawnEvery = Math.max(520, state.spawnEvery - 40);
     levelEl.textContent = state.level;
     flashScorePill('Cấp '+state.level);
-    makeBeep(520,80,.08);
+    if(!settings.muted) makeBeep(520,80,.08);
   }
 
-  // Shield timer logic
-  if (state.shield) {
-      state.shieldTimer -= dt;
-      if (state.shieldTimer <= 0) {
-          state.shield = false;
-          playerEl.style.boxShadow = '0 10px 22px rgba(0,0,0,.15), inset 0 0 0 2px #ffffff22'; // Reset shadow
-          showToast('Khiên hết hạn!', 800);
-      }
-  }
-
-  // Spawner logic
-  state.lastSpawn += dt * 1000;
-  if (state.lastSpawn > state.spawnEvery) {
-      spawn();
-      state.lastSpawn = 0;
-  }
-
-  // Player physics
+  // === VẬT LÝ NHÂN VẬT: NHẤN & GIỮ ĐỂ BAY ===
   const p = state.player;
   const dcur = DIFFS[settings.diff];
-  p.vy += dcur.g * dt;
+
+  // trọng lực
+  p.vy += (dcur.g || state.gravity) * dt;
+
+  // giữ để đẩy lên
   if(holdUp){
-    p.vy -= dcur.thrust * dt;
-    if(p.vy < dcur.maxAscend) p.vy = dcur.maxAscend;
+    p.vy += -(dcur.thrust || 1900) * dt;
+    const maxUp = (dcur.maxAscend || -650);
+    if(p.vy < maxUp) p.vy = maxUp;
   }
+
+  // cập nhật vị trí
   p.y += p.vy * dt;
 
-  if(p.y >= state.groundY - p.h){
+  // chạm đất
+  if(p.y > state.groundY - p.h){
     p.y = state.groundY - p.h;
-    p.vy = 0;
+    p.vy = Math.max(0, p.vy);
   }
+
+  // trần
   const topLimit = state.h * 0.06;
   if(p.y < topLimit){
     p.y = topLimit;
     if(p.vy < 0) p.vy = 0;
   }
+
   placePlayer();
 
-  // Update and check entities
-  for(let i = state.ents.length - 1; i >= 0; i--) {
-      const e = state.ents[i];
-      e.x += e.vx * dt;
-      e.node.style.transform = `translate(${e.x}px, ${e.y}px)`;
+  // Spawn theo thời gian
+  state.lastSpawn += dt*1000;
+  if(state.lastSpawn >= state.spawnEvery){
+    state.lastSpawn = 0;
+    spawn();
+  }
 
-      if (e.x < - (e.w || 150)) { // Give some buffer
-          e.alive = false;
-      }
-      
-      // Collision check
-      const pRect = { left: p.x, right: p.x + p.w, top: p.y, bottom: p.y + p.h };
-      const eRect = { left: e.x, right: e.x + e.w, top: e.y, bottom: e.y + e.h };
-      if (e.alive && intersect(pRect, eRect)) {
-          if (e.type === 'bad') handleHit(e);
-          else if (e.type === 'power') pickupShield(e);
-          else collectGood(e);
-      }
+  // Di chuyển & va chạm
+  const boundsP = playerEl.getBoundingClientRect();
+  for(const obj of state.ents){
+    if(!obj.alive) continue;
+    obj.x += obj.vx * dt;
+    obj.node.style.transform = `translate(${obj.x}px, ${obj.y}px)`;
+    if(obj.x < -obj.w - 40){ obj.alive=false; obj.node.remove(); continue; }
 
-      if (!e.alive) {
-          safeRemove(e.node);
-          state.ents.splice(i, 1);
-      }
+    const br = obj.node.getBoundingClientRect();
+    if(intersect(boundsP, br)){
+      if(obj.type==='bad') handleHit(obj);
+      else if(obj.type==='power') pickupShield(obj);
+      else collectGood(obj);
+    }
+  }
+  // dọn bớt
+  if(state.ents.length>0 && state.ents.length % 25===0){
+    state.ents = state.ents.filter(e=>e.alive);
   }
 
   requestAnimationFrame(step);
@@ -546,44 +578,37 @@ function intersect(a,b){
   return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
 }
 
-/* ======= TÁC ĐỘNG SỰ KIỆN ======= */
+/* ======= XỬ LÝ SỰ KIỆN VA CHẠM ======= */
 function handleHit(obj){
-  if (!obj.alive) return; // Prevent double hits
-  obj.alive=false;
+  obj.alive=false; safeRemove(obj.node);
   if(state.shield){
     state.shield=false;
     playerEl.style.boxShadow = '0 10px 22px rgba(0,0,0,.15), inset 0 0 0 2px #ffffff22';
     showToast('Khiên đã chặn va chạm!', 900);
-    makeBeep(260,90,.08);
+    if(!settings.muted) makeBeep(260,90,.08);
     return;
   }
-
   state.lives--; livesEl.textContent = Math.max(0,state.lives);
   flashRed();
-  makeBeep(180,120,.12);
-
-  if(state.lives<=0){
-    return gameOverNow();
-  }
+  if(!settings.muted) makeBeep(180,120,.12);
+  if(state.lives<=0) return gameOverNow();
 }
 
 function pickupShield(obj){
-  if (!obj.alive) return;
-  obj.alive=false;
+  obj.alive=false; safeRemove(obj.node);
   state.shield = true; state.shieldTimer = 8;
   playerEl.style.boxShadow = '0 0 0 3px #fbbf24, 0 10px 22px rgba(0,0,0,.15)';
   showToast('Nhận Khiên (8s)!', 900);
-  makeBeep(820,80,.09);
+  if(!settings.muted) makeBeep(820,80,.09);
 }
 
 function collectGood(obj){
-  if (!obj.alive) return;
-  obj.alive=false;
+  obj.alive=false; safeRemove(obj.node);
   const pts = Number(obj.node.dataset.pts)||8;
   state.score += pts;
   scoreEl.textContent = state.score;
   showToast('+'+pts+' điểm', 650);
-  makeBeep(980,60,.08);
+  if(!settings.muted) makeBeep(980,60,.08);
 }
 
 /* ======= HIỆU ỨNG NHANH ======= */
@@ -596,7 +621,7 @@ function showToast(msg, ms=700){
 function flashRed(){
   game.style.transition='background-color .12s';
   game.style.backgroundColor='#ffd9d9';
-  setTimeout(()=>{ game.style.backgroundColor=''; game.style.transition=''; }, 120);
+  setTimeout(()=>{ game.style.backgroundColor=''; }, 120);
 }
 function flashScorePill(txt){
   const pill = document.getElementById('scorePill');
@@ -614,9 +639,8 @@ function startGame(){
   state.over=false; state.running=true; state.paused=false;
   state.lastT = performance.now();
   measure();
-  
   const p = state.player;
-  p.x = 120; p.y = state.groundY - p.h; p.vy=0;
+  p.x = 120; p.y = state.groundY - p.h; p.vy=0; p.onGround=true;
   placePlayer();
   requestAnimationFrame(step);
 }
@@ -648,8 +672,11 @@ btnMute.addEventListener('click', ()=>{
   settings.muted = !settings.muted;
   btnMute.innerHTML = settings.muted ? `<i class="bi bi-volume-mute-fill"></i>` : `<i class="bi bi-volume-up-fill"></i>`;
 });
+
+/* Ngăn cuộn khi nhấn Space */
 window.addEventListener('keydown', (e)=>{ if(e.code==='Space') e.preventDefault(); }, {passive:false});
 
+/* BÀN PHÍM: giữ để bay */
 document.addEventListener('keydown', (e)=>{
   if(e.code === 'Space'){ holdUp = true; }
   else if(e.key==='p'||e.key==='P'){ pauseToggle(); }
@@ -659,22 +686,21 @@ document.addEventListener('keyup', (e)=>{
   if(e.code === 'Space'){ holdUp = false; }
 });
 
+/* CẢM ỨNG/CHUỘT (pointer = hợp nhất) */
 const startHold = (e)=>{ e.preventDefault(); holdUp = true; };
 const endHold   = (e)=>{ e.preventDefault(); holdUp = false; };
 
 game.addEventListener('pointerdown', startHold, {passive:false});
 game.addEventListener('pointerup',   endHold,   {passive:false});
-game.addEventListener('pointerleave', endHold, {passive:false}); // Added to handle pointer leaving game area
-game.addEventListener('pointercancel',endHold,   {passive:false});
+game.addEventListener('pointercancel',endHold,  {passive:false});
 btnJump.addEventListener('pointerdown', startHold, {passive:false});
 btnJump.addEventListener('pointerup',   endHold,   {passive:false});
-btnJump.addEventListener('pointercancel',endHold,   {passive:false});
-
+btnJump.addEventListener('pointercancel',endHold,  {passive:false});
 
 /* ======= KHỞI TẠO ======= */
-applySettings(); placePlayer(); measure();
+applySettings(); placePlayer();
 
-/* ======= BONUS: ANTICRASH GUARDS ======= */
+/* ======= GUARDS ======= */
 window.addEventListener('error', (ev)=>{
   console.warn('Lỗi đã được bắt:', ev.message);
   showToast('Đã tự phục hồi!', 900);
